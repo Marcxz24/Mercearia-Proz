@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mercearia PROZ - Painel de Gestão</title>
+    <!-- O Tailwind fornece as classes utilitárias usadas para compor o layout e os estados visuais da interface. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide converte os atributos data-lucide dos elementos em ícones SVG. -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js renderiza os gráficos do dashboard e do histórico de vendas. -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Regras complementares ao tema utilitário, como a personalização da barra de rolagem. -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex font-sans">
+
+    <!-- Navegação persistente entre módulos; em telas maiores, o menu recolhe para liberar espaço ao conteúdo. -->
+<aside class="group w-20 hover:w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between hidden md:flex overflow-x-hidden transition-all duration-300 shrink-0">
+    <div>
+        <!-- Identificação da aplicação, mantida visível mesmo quando a navegação está recolhida. -->
+        <div class="h-16 flex items-center justify-center group-hover:justify-start px-3 border-b border-slate-800 gap-3">
+            <div class="bg-emerald-600 p-2 rounded-lg text-white shadow-lg shadow-emerald-600/20 shrink-0">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+            </div>
+            <div class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[12rem] group-hover:opacity-100">
+                <span class="text-base font-bold tracking-tight text-white block leading-none">Mercearia PROZ</span>
+                <span class="text-xs text-emerald-400 font-medium">ERP & PDV v1.0</span>
+            </div>
+        </div>
+
+        <!-- Cada botão abre uma seção correspondente por meio da função mudarAba. -->
+        <nav class="p-2 space-y-1.5">
+            <button onclick="mudarAba('dashboard')" id="nav-dashboard" class="w-full flex items-center justify-center group-hover:justify-start gap-3 px-3 py-3 rounded-xl text-sm font-medium bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 transition">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i>
+                <span class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[12rem] group-hover:opacity-100">Dashboard</span>
+            </button>
+            <button onclick="mudarAba('produtos')" id="nav-produtos" class="w-full flex items-center justify-center group-hover:justify-start gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
+                <i data-lucide="package" class="w-4 h-4 shrink-0"></i>
+                <span class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[12rem] group-hover:opacity-100">Produtos</span>
+            </button>
+            <button onclick="mudarAba('categorias')" id="nav-categorias" class="w-full flex items-center justify-center group-hover:justify-start gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
+                <i data-lucide="tags" class="w-4 h-4 shrink-0"></i>
+                <span class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[12rem] group-hover:opacity-100">Categorias</span>
+            </button>
+            <button onclick="mudarAba('clientes')" id="nav-clientes" class="w-full flex items-center justify-center group-hover:justify-start gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
+                <i data-lucide="users" class="w-4 h-4 shrink-0"></i>
+                <span class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[12rem] group-hover:opacity-100">Clientes</span>
+            </button>
+            <button id="nav-pdv" onclick="mudarAba('pdv')" class="w-full flex items-center justify-center group-hover:justify-start gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
+                <i data-lucide="shopping-cart" class="w-5 h-5 shrink-0"></i>
+                <span class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[12rem] group-hover:opacity-100">Frente de Caixa (PDV)</span>
+            </button>
+            <button id="nav-vendas" onclick="mudarAba('vendas')" class="w-full flex items-center justify-center group-hover:justify-start gap-3 px-3 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">
+                <i data-lucide="bar-chart-2" class="w-5 h-5 shrink-0"></i>
+                <span class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[12rem] group-hover:opacity-100">Relatório de Vendas</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- A ação destrutiva fica separada da navegação para reduzir acionamentos acidentais. -->
+    <div class="p-2 border-t border-slate-800">
+        <button id="btnLimparBaseGeral" onclick="zerarSistema()" class="w-full bg-rose-950/40 hover:bg-rose-900/40 text-rose-300 border border-rose-800/60 font-medium px-3 py-2.5 rounded-xl text-xs transition flex items-center justify-center group-hover:justify-start gap-2">
+            <i data-lucide="rotate-ccw" class="w-4 h-4 shrink-0"></i>
+            <span class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[12rem] group-hover:opacity-100">Zerar Sistema (Reset)</span>
+        </button>
+    </div>
+</aside>
+
+    <!-- Área de trabalho: recebe a seção selecionada e pode rolar sem mover a navegação. -->
+<div class="flex-grow flex flex-col min-w-0">
+    
+    <!-- Contextualiza a seção aberta e informa o modo de armazenamento em uso. -->
+    <header class="h-16 bg-slate-900/50 border-b border-slate-800 px-6 flex items-center justify-between backdrop-blur-sm sticky top-0 z-30">
+        <h1 id="tituloPagina" class="text-lg font-bold text-white">Dashboard Geral</h1>
+        <div class="flex items-center space-x-3">
+            <span class="text-xs bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700">Modo LocalStorage Ativo</span>
+        </div>
+    </header>
+
+    <main class="flex-grow p-6 sm:p-8 space-y-8 overflow-y-auto">
+
+        <!-- Seções independentes controladas por mudarAba; apenas a seção ativa fica visível. -->
+
+        <!-- Visão geral: os indicadores e resumos são preenchidos pelos dados persistidos no navegador. -->
+        <div id="secao-dashboard" class="space-y-6">
+            <!-- Indicadores calculados a partir do estoque e dos cadastros atuais. -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                    <span class="text-xs font-semibold text-slate-400 uppercase">Patrimônio Estoque</span>
+                    <div id="dashTotalInvestido" class="text-2xl font-bold text-white mt-2">R$ 0,00</div>
+                    <p class="text-xs text-emerald-400 mt-1">Valor total imobilizado em estoque</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                    <span class="text-xs font-semibold text-slate-400 uppercase">Total de Produtos</span>
+                    <div id="dashTotalProdutos" class="text-2xl font-bold text-white mt-2">0</div>
+                    <p class="text-xs text-blue-400 mt-1">Itens cadastrados</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                    <span class="text-xs font-semibold text-slate-400 uppercase">Total de Clientes</span>
+                    <div id="dashTotalClientes" class="text-2xl font-bold text-white mt-2">0</div>
+                    <p class="text-xs text-amber-400 mt-1">Base de compradores</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                    <span class="text-xs font-semibold text-slate-400 uppercase">Estoque Crítico</span>
+                    <div id="dashEstoqueCritico" class="text-2xl font-bold text-rose-400 mt-2">0</div>
+                    <p class="text-xs text-rose-400 mt-1">Abaixo de 10 unidades</p>
+                </div>
+            </div>
+
+            <!-- Resumos por categoria e destaques ajudam a localizar rapidamente informações do catálogo. -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                    <h3 class="text-sm font-bold text-slate-200 mb-4 flex items-center space-x-2">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Distribuição por Categoria</span>
+                    </h3>
+                    <div id="graficoCategoriasResumo" class="space-y-3 text-sm text-slate-400">
+                        <!-- O catálogo gera este resumo para refletir as categorias e produtos atuais. -->
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-200 mb-2 flex items-center space-x-2">
+                            <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
+                           <span>Destaques do Catálogo</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-4">Identificação automática.</p>
+                    </div>
+                    <div class="space-y-3 bg-slate-950 p-4 rounded-xl border border-slate-850">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Produto Mais Barato:</span>
+                            <span id="dashMaisBarato" class="font-semibold text-emerald-400">Nenhum</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- O gráfico é atualizado ao abrir o dashboard e consolida os valores por forma de pagamento. -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
+                <h3 class="text-sm font-bold text-slate-200 flex items-center space-x-2">
+                    <i data-lucide="pie-chart" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Vendas por Forma de Pagamento</span>
+                </h3>
+                <div class="h-64 flex justify-center items-center">
+                    <canvas id="graficoDashboardPagamentos"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cadastro, pesquisa e manutenção dos produtos que alimentam o estoque e o PDV. -->
+        <div id="secao-produtos" class="space-y-6 hidden">
+            <div class="flex justify-between items-center">
+                <div class="relative max-w-md w-full">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="inputBuscaProduto" placeholder="Buscar produto..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                </div>
+                <button onclick="abrirModalProduto()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2.5 rounded-xl text-sm transition flex items-center space-x-2 shadow-lg shadow-emerald-600/20">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Novo Produto</span>
+                </button>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-950/50 text-slate-400 text-xs font-semibold uppercase border-b border-slate-800">
+                            <th class="py-3 px-6">ID</th>
+                            <th class="py-3 px-6">Produto</th>
+                            <th class="py-3 px-6">Categoria</th>
+                            <th class="py-3 px-6">Estoque</th>
+                            <th class="py-3 px-6">Preço</th>
+                            <th class="py-3 px-6 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaProdutos" class="divide-y divide-slate-800 text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Categorias organizam o catálogo e são usadas ao cadastrar ou editar produtos. -->
+        <div id="secao-categorias" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- O mesmo formulário atende inclusão e edição conforme o identificador oculto. -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 h-fit space-y-4">
+                    <h3 class="text-sm font-bold text-white">Cadastrar Nova Categoria</h3>
+                    <form id="formCategoria" class="space-y-4">
+                        <input type="hidden" id="editCategoriaId">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Nome da Categoria</label>
+                            <input type="text" id="inputNomeCategoria" required placeholder="Ex: Hortifruti" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl text-sm transition">Salvar Categoria</button>
+                    </form>
+                </div>
+
+                <!-- Lista as categorias cadastradas e disponibiliza as ações de manutenção. -->
+                <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950/50 text-slate-400 text-xs font-semibold uppercase border-b border-slate-800">
+                                <th class="py-3 px-6">ID</th>
+                                <th class="py-3 px-6">Nome da Categoria</th>
+                                <th class="py-3 px-6 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaCategorias" class="divide-y divide-slate-800 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cadastro de clientes, opcionalmente associado às vendas feitas no caixa. -->
+        <div id="secao-clientes" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Os dados deste formulário abastecem a lista de clientes disponível no PDV. -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 h-fit space-y-4">
+                    <h3 class="text-sm font-bold text-white">Cadastrar Novo Cliente</h3>
+                    <form id="formCliente" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Nome Completo</label>
+                            <input type="text" id="inputClienteNome" required placeholder="Ex: Maria Oliveira" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Telefone / WhatsApp</label>
+                            <input type="text" id="inputClienteFone" required placeholder="(38) 99999-9999" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl text-sm transition">Salvar Cliente</button>
+                    </form>
+                </div>
+
+                <!-- Relação dos clientes cadastrados com acesso à ação de remoção. -->
+                <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950/50 text-slate-400 text-xs font-semibold uppercase border-b border-slate-800">
+                                <th class="py-3 px-6">ID</th>
+                                <th class="py-3 px-6">Nome</th>
+                                <th class="py-3 px-6">Telefone</th>
+                                <th class="py-3 px-6 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaClientes" class="divide-y divide-slate-800 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fluxo de checkout: seleção de itens, identificação opcional do cliente e confirmação do pagamento. -->
+        <div id="secao-pdv" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- A seleção e o carrinho ficam juntos para que o operador confira os itens antes de cobrar. -->
+                <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
+                    <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+                        <i data-lucide="search" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Buscar e Adicionar Produto</span>
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs text-slate-400 mb-1">Selecione o Produto</label>
+                            <select id="selectPdvProduto" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                                <option value="">Selecione um produto...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Quantidade</label>
+                            <div class="flex space-x-2">
+                                <input type="number" id="inputPdvQtd" value="1" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                                <button onclick="adicionarAoCarrinhoPDV()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2.5 rounded-xl transition flex items-center justify-center">
+                                    <i data-lucide="plus" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exibe quantidades e subtotais antes de confirmar a venda. -->
+                    <div class="border border-slate-800 rounded-xl overflow-hidden mt-4">
+                        <table class="w-full text-left text-sm text-slate-300">
+                            <thead class="bg-slate-950 text-xs font-semibold uppercase text-slate-400 border-b border-slate-800">
+                                <tr>
+                                    <th class="py-3 px-4">Item</th>
+                                    <th class="py-3 px-4">Preço Un.</th>
+                                    <th class="py-3 px-4">Qtd</th>
+                                    <th class="py-3 px-4">Subtotal</th>
+                                    <th class="py-3 px-4 text-right">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaCarrinhoPdv">
+                                <tr>
+                                    <td colspan="5" class="py-8 text-center text-slate-500 text-xs">Carrinho vazio. Adicione produtos acima.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reúne cliente, forma de pagamento e total para finalizar a transação. -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5 flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+                            <i data-lucide="receipt" class="w-4 h-4 text-emerald-400"></i>
+                            <span>Resumo da Venda</span>
+                        </h3>
+
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Cliente (Opcional)</label>
+                            <select id="selectPdvCliente" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+                                <option value="">Cliente Não Informado (Consumidor)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Forma de Pagamento</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" onclick="selecionarFormaPagamento('Dinheiro')" id="btnPagDinheiro" class="btn-pagamento py-2.5 px-2 rounded-xl text-xs font-semibold border border-slate-800 bg-slate-950 text-slate-400 hover:border-emerald-500 transition text-center">
+                                    💵 Dinheiro
+                                </button>
+                                <button type="button" onclick="selecionarFormaPagamento('Cartão')" id="btnPagCartao" class="btn-pagamento py-2.5 px-2 rounded-xl text-xs font-semibold border border-slate-800 bg-slate-950 text-slate-400 hover:border-emerald-500 transition text-center">
+                                    💳 Cartão
+                                </button>
+                                <button type="button" onclick="selecionarFormaPagamento('PIX')" id="btnPagPix" class="btn-pagamento py-2.5 px-2 rounded-xl text-xs font-semibold border border-slate-800 bg-slate-950 text-slate-400 hover:border-emerald-500 transition text-center">
+                                    ⚡ PIX
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <div class="flex justify-between text-xs text-slate-400">
+                                <span>Total de Itens:</span>
+                                <span id="pdvQtdTotalItens" class="font-medium text-slate-200">0</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+                                <span class="text-sm font-semibold text-slate-300">VALOR TOTAL:</span>
+                                <span id="pdvValorTotal" class="text-xl font-bold text-emerald-400">R$ 0,00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="finalizarVendaPDV()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-lg shadow-emerald-950/50 flex items-center justify-center space-x-2">
+                        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                        <span>Finalizar Venda</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+        <!-- Indicadores, gráficos e registros detalhados são derivados das vendas salvas no navegador. -->
+        <div id="secao-vendas" class="space-y-6 hidden">
+            <!-- O faturamento e o ticket médio consideram todas as transações registradas. -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                    <span class="text-xs font-semibold text-slate-400 uppercase">Faturamento Total</span>
+                    <div id="relatorioFaturamentoTotal" class="text-2xl font-bold text-emerald-400 mt-2">R$ 0,00</div>
+                    <p class="text-xs text-slate-400 mt-1">Soma de todas as vendas</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                    <span class="text-xs font-semibold text-slate-400 uppercase">Total de Vendas</span>
+                    <div id="relatorioQtdVendas" class="text-2xl font-bold text-white mt-2">0</div>
+                    <p class="text-xs text-slate-400 mt-1">Transações realizadas</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                    <span class="text-xs font-semibold text-slate-400 uppercase">Ticket Médio</span>
+                    <div id="relatorioTicketMedio" class="text-2xl font-bold text-amber-400 mt-2">R$ 0,00</div>
+                    <p class="text-xs text-slate-400 mt-1">Média gasta por venda</p>
+                </div>
+            </div>
+
+            <!-- Agregações visuais facilitam comparar meios de pagamento e volume vendido por produto. -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Compara o faturamento acumulado em cada forma de pagamento. -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
+                    <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+                        <i data-lucide="pie-chart" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Formas de Pagamento</span>
+                    </h3>
+                    <div class="h-64 flex justify-center items-center">
+                        <canvas id="graficoPagamentos"></canvas>
+                    </div>
+                </div>
+
+                <!-- Ordena visualmente os produtos pelo total de unidades vendidas. -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
+                    <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Top Produtos Vendidos (Unidades)</span>
+                    </h3>
+                    <div class="h-64 flex justify-center items-center">
+                        <canvas id="graficoMaisVendidos"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mantém os detalhes por transação para conferência além dos totais agregados dos gráficos. -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden space-y-3 p-6">
+                <h3 class="text-sm font-bold text-white flex items-center space-x-2 mb-4">
+                    <i data-lucide="list" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Histórico Detalhado de Vendas</span>
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950/50 text-slate-400 text-xs font-semibold uppercase border-b border-slate-800">
+                                <th class="py-3 px-4">Cód. Venda</th>
+                                <th class="py-3 px-4">Data/Hora</th>
+                                <th class="py-3 px-4">Cliente</th>
+                                <th class="py-3 px-4">Pagamento</th>
+                                <th class="py-3 px-4">Itens Vendidos</th>
+                                <th class="py-3 px-4 text-right">Valor Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaHistoricoVendas" class="divide-y divide-slate-800 text-sm">
+                            <tr>
+                                <td colspan="6" class="py-8 text-center text-slate-500 text-xs">Nenhuma venda registrada até o momento.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+    <!-- Formulário modal reaproveitado tanto para incluir um produto quanto para editar um existente. -->
+    <div id="modalProduto" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="fecharModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-base font-bold text-white mb-4">Cadastrar Novo Produto</h3>
+            <form id="formProduto" class="space-y-4">
+                <input type="hidden" id="editProdutoId">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Nome do Produto</label>
+                    <input type="text" id="inputNomeProduto" required placeholder="Ex: Café 500g" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Preço (R$)</label>
+                        <input type="number" id="inputPrecoProduto" step="0.01" min="0.01" required placeholder="14.90" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Estoque</label>
+                        <input type="number" id="inputEstoqueProduto" min="0" required placeholder="20" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Categoria</label>
+                    <select id="inputCategoriaProduto" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500"></select>
+                </div>
+                <div class="pt-2 flex justify-end space-x-3">
+                    <button type="button" onclick="fecharModalProduto()" class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white">Cancelar</button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2 rounded-xl text-xs transition">Salvar Produto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- A ordem carrega primeiro cadastros referenciados pelo catálogo e, depois, os fluxos de venda e análise. -->
+    <script src="assets/js/categorias.js"></script>
+    <script src="assets/js/clientes.js"></script>
+    <script src="assets/js/catalogo.js"></script>
+    <script src="assets/js/pdv.js"></script>
+    <script src="assets/js/vendas.js"></script>
+    <script>
+        // Centraliza a troca de seção, o destaque do menu e a atualização dos módulos que dependem de dados atuais.
+        function mudarAba(aba) {
+            ['dashboard', 'produtos', 'categorias', 'clientes', 'pdv', 'vendas'].forEach(a => {
+                document.getElementById(`secao-${a}`)?.classList.add('hidden');
+                document.getElementById(`nav-${a}`)?.setAttribute("class", "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition");
+            });
+            
+            document.getElementById(`secao-${aba}`)?.classList.remove('hidden');
+            document.getElementById(`nav-${aba}`)?.setAttribute("class", "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 transition");
+            
+            const titulos = { 
+                dashboard: "Dashboard Geral", 
+                produtos: "Gestão de Produtos", 
+                categorias: "Gestão de Categorias", 
+                clientes: "Gestão de Clientes",
+                pdv: "Frente de Caixa (PDV)",
+                vendas: "Relatório & Análise de Vendas"
+            };
+            document.getElementById("tituloPagina").textContent = titulos[aba] || "Mercearia PROZ";
+
+            // Recria o gráfico ao entrar no dashboard para refletir vendas registradas desde a última visita.
+            if (aba === 'dashboard' && typeof renderizarGraficoDashboardPagamentos === "function") {
+                renderizarGraficoDashboardPagamentos();
+            }
+
+            if (aba === 'pdv' && typeof inicializarInterfacePDV === "function") {
+                inicializarInterfacePDV();
+            }
+
+            if (aba === 'vendas' && typeof renderizarRelatorioVendas === "function") {
+                renderizarRelatorioVendas();
+            }
+
+            if(window.lucide) lucide.createIcons();
+        }
+    </script>
+    <script>
+        function zerarSistema() {
+            if (confirm("⚠️ Tem certeza que deseja zerar o sistema? Todos os produtos, clientes, categorias e histórico de vendas serão apagados permanentemente.")) {
+                // Limpa explicitamente cada conjunto de dados mantido pelo sistema para evitar resíduos de cadastros anteriores.
+                localStorage.removeItem("mercearia_bom_dia_produtos");
+                localStorage.removeItem("mercearia_produtos");
+                localStorage.removeItem("mercearia_categorias");
+                localStorage.removeItem("mercearia_clientes");
+                localStorage.removeItem("mercearia_vendas");
+                
+                alert("🔄 Sistema reiniciado com sucesso! O aplicativo será recarregado.");
+                
+                // Reinicia o estado em memória e reconstrói a interface já sem os dados removidos.
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

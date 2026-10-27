@@ -1,0 +1,37 @@
+/* Customizações finas para o tema da Mercearia Bom Dia */
+
+/* Scrollbar escuro personalizado */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* Efeito de realce nas linhas da tabela */
+#tabelaProdutos tr {
+    transition: background-color 0.15s ease-in-out;
+}
+
+#tabelaProdutos tr:hover {
+    background-color: rgba(30, 41, 59, 0.7);
+}
+
+/* Estilização para o código inline nas descrições de métricas */
+code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    padding: 2px 4px;
+    border-radius: 4px;
+    background-color: rgba(15, 23, 42, 0.6);
+}
