@@ -35,3 +35,13 @@ code {
     border-radius: 4px;
     background-color: rgba(15, 23, 42, 0.6);
 }
+
+/* --- AJUSTES DE RESPONSIVIDADE MOBILE --- */
+@media (max-width: 768px) {
+    /* Evita que tabelas quebrem o layout no celular permitindo scroll horizontal interno */
+    .overflow-x-auto {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
