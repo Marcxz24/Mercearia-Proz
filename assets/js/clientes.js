@@ -58,10 +58,17 @@ function renderizarTabelaClientes() {
 }
 
 function removerCliente(id) {
-    if(confirm("Deseja remover este cliente?")) {
-        clientes = clientes.filter(c => c.id !== id);
-        salvarClientesStorage();
-    }
+    confirmarAcao(
+        "Remover Cliente?",
+        "Deseja realmente remover este cliente do cadastro?",
+        function() {
+            clientes = clientes.filter(c => c.id !== id);
+            salvarClientesStorage();
+            
+            // Exibe a notificação de sucesso estilizada
+            notificar('success', 'Cliente removido com sucesso!');
+        }
+    );
 }
 
 document.addEventListener("DOMContentLoaded", () => {

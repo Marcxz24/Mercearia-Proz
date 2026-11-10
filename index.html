@@ -13,6 +13,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Regras complementares ao tema utilitário, como a personalização da barra de rolagem. -->
     <link rel="stylesheet" href="assets/css/style.css">
+
+    <!-- SweetAlert2 para mensagens estilizadas e modernas -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row font-sans">
@@ -659,21 +662,34 @@
             }
         }
     </script>
+    <!-- Importar o utilitário de notificações antes dos demais scripts -->
+    <script src="assets/js/notificacoes.js"></script>
+
     <script>
         function zerarSistema() {
-            if (confirm("⚠️ Tem certeza que deseja zerar o sistema? Todos os produtos, clientes, categorias e histórico de vendas serão apagados permanentemente.")) {
-                // Limpa explicitamente cada conjunto de dados mantido pelo sistema para evitar resíduos de cadastros anteriores.
-                localStorage.removeItem("mercearia_bom_dia_produtos");
-                localStorage.removeItem("mercearia_produtos");
-                localStorage.removeItem("mercearia_categorias");
-                localStorage.removeItem("mercearia_clientes");
-                localStorage.removeItem("mercearia_vendas");
+            confirmarAcao(
+                "Zerar Sistema?",
+                "Todos os produtos, clientes, categorias e histórico de vendas serão apagados permanentemente.",
+                function() {
+                    localStorage.removeItem("mercearia_bom_dia_produtos");
+                    localStorage.removeItem("mercearia_produtos");
+                    localStorage.removeItem("mercearia_categorias");
+                    localStorage.removeItem("mercearia_clientes");
+                    localStorage.removeItem("mercearia_vendas");
 
-                alert("🔄 Sistema reiniciado com sucesso! O aplicativo será recarregado.");
-
-                // Reinicia o estado em memória e reconstrói a interface já sem os dados removidos.
-                location.reload();
-            }
+                    Swal.fire({
+                        title: 'Sistema Reiniciado!',
+                        text: 'O aplicativo será recarregado em instantes.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false,
+                        background: '#0f172a',
+                        color: '#f8fafc'
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            );
         }
     </script>
 </body>

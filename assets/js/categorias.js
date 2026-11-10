@@ -76,10 +76,17 @@ function prepararEdicaoCategoria(id, nome) {
 }
 
 function removerCategoria(id) {
-    if(confirm("Deseja remover esta categoria?")) {
-        categorias = categorias.filter(c => c.id !== id);
-        salvarCategoriasStorage();
-    }
+    confirmarAcao(
+        "Remover Categoria?",
+        "Deseja realmente remover esta categoria do sistema?",
+        function() {
+            categorias = categorias.filter(c => c.id !== id);
+            salvarCategoriasStorage();
+            
+            // Exibe a notificação de sucesso estilizada
+            notificar('success', 'Categoria removida com sucesso!');
+        }
+    );
 }
 
 document.addEventListener("DOMContentLoaded", () => {

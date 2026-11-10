@@ -189,10 +189,17 @@ function salvarProdutosStorage() {
 }
 
 function removerProduto(id) {
-    if (confirm("Deseja realmente remover este produto?")) {
-        produtos = produtos.filter(p => p.id !== id);
-        salvarProdutosStorage();
-    }
+    confirmarAcao(
+        "Remover Produto?",
+        "Deseja realmente remover este produto do estoque?",
+        function() {
+            produtos = produtos.filter(p => p.id !== id);
+            salvarProdutosStorage();
+            
+            // Exibe a notificação de sucesso estilizada
+            notificar('success', 'Produto removido com sucesso!');
+        }
+    );
 }
 
 /* O mesmo modal é preparado com campos vazios para inclusão ou preenchidos para edição. */

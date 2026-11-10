@@ -86,7 +86,7 @@ function adicionarAoCarrinhoPDV() {
     const inputQtd = document.getElementById("inputPdvQtd");
 
     if (!selectProd || !selectProd.value) {
-        alert("Selecione um produto válido!");
+        notificar('warning', 'Selecione um produto válido!');
         return;
     }
 
@@ -96,7 +96,7 @@ function adicionarAoCarrinhoPDV() {
     const prodOriginal = produtos.find(p => p.id === prodId);
 
     if (!prodOriginal) {
-        alert("Produto não encontrado!");
+        notificar('error', 'Produto não encontrado!');
         return;
     }
 
@@ -104,7 +104,7 @@ function adicionarAoCarrinhoPDV() {
     const qtdAtualNoCarrinho = itemNoCarrinho ? itemNoCarrinho.quantidade : 0;
 
     if ((qtdAtualNoCarrinho + qtdDesejada) > Number(prodOriginal.estoque)) {
-        alert(`Estoque insuficiente! Disponível em estoque: ${prodOriginal.estoque} un.`);
+        notificar('warning', `Estoque insuficiente! Disponível: ${prodOriginal.estoque} un.`);
         return;
     }
 
@@ -172,7 +172,7 @@ function renderizarCarrinhoPDV() {
 
 function finalizarVendaPDV() {
     if (carrinhoPdv.length === 0) {
-        alert("O carrinho está vazio! Adicione produtos antes de finalizar a venda.");
+        notificar('warning', 'O carrinho está vazio! Adicione produtos.');
         return;
     }
 
@@ -214,7 +214,7 @@ function finalizarVendaPDV() {
     vendasRealizadas.push(novaVenda);
     salvarVendasStorage();
 
-    alert(`✅ Venda de R$ ${totalVenda.toFixed(2)} realizada com sucesso!\nForma de Pagamento: ${formaPagamentoSelecionada}\nEstoque atualizado com sucesso!`);
+    notificar('success', `Venda de R$ ${totalVenda.toFixed(2)} realizada com sucesso!`);
 
     // Após confirmar, libera o carrinho e atualiza as telas para que a próxima operação use o estoque corrigido.
     carrinhoPdv = [];
